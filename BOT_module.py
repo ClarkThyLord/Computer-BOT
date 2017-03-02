@@ -33,7 +33,7 @@ async def catchMsgBOT(bot, author, channel):
 
 # Tells BOT to sleep for NUM of SECONDS
 async def sleepBOT(bot, seconds):
-    if tools.isIntTOOL(seconds) == False:
+    if isinstance(seconds, int) == False:
         await bot.say(str(seconds) + " isn't a valid number!")
 
     else:

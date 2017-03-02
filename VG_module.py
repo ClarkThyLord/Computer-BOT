@@ -5,6 +5,7 @@
 import gamelocker
 import datetime
 import TOOL_module as tools
+from gamelocker.strings import pretty
 
 # VG Variables-- Use #1 = , Use #2 = Object Oriented
 keyVG = ""  # VG_API_TOKEN_HERE
@@ -43,7 +44,7 @@ async def commandVG(client, message, something):
 
         if str(COMMAND[1]) == "performance":  # >VG performance NAME DAYS
 
-            if tools.isIntTOOL(COMMAND[3]) == True:
+            if isinstance(COMMAND[3], int) == True:
                 days = int(COMMAND[3])
                 if days > 93:  # If DAYS is ILLEGAL for being to BIG set 93
                     days = 93
@@ -193,10 +194,12 @@ def getPlayerPerformanceVG(name, days=7, type=0):
 
     # Adding the TOP ACTORS used in the past X days to MSG
     actors = tools.giveListInOrderTOOL(actor)
+    
+    
     num = 0
     while num < 5:
         num += 1
-        msg += "**" + str(num) + "** ~ *" + str(giveHeroNameVG(actors[num])) + "*\n"
+        msg += "**" + str(num) + "** ~ *" + str(pretty(actors[num])) + "*\n"
 
     # Adding KILLS MEAN from the past X days to MSG
     msg += "\n**Kills per Game:** *" + str(tools.giveMeanOfList(kills)) + "*"
@@ -236,100 +239,3 @@ def getPlayerPerformanceVG(name, days=7, type=0):
 
     msg += "\n```"
     return msg
-
-# Given ACTOR ID give HERO title
-def giveHeroNameVG(ID):
-    ID = str(ID)  # ID to STRING to PREVENT ERRORS
-
-    if ID == "*Adagio*":
-        return "Adagio"
-
-    elif ID == "*Alpha*":
-        return "Alpha"
-
-    elif ID == "*Ardan*":
-        return "Ardan"
-
-    elif ID == "*Baron*":
-        return "Baron"
-
-    elif ID == "*Blackfeather*":
-        return "Blackfeather"
-
-    elif ID == "*Catherine":
-        return "Catherine"
-
-    elif ID == "*Celeste*":
-        return "Celeste"
-
-    elif ID == "*Flicker*":
-        return "Flicker"
-
-    elif ID == "*Fortress*":
-        return "Fortress"
-
-    elif ID == "*Glaive*":
-        return "Glaive"
-
-    elif ID == "*Gwen*":
-        return "Gwen"
-
-    elif ID == "*Idris*":
-        return "Idris"
-
-    elif ID == "*Joule*":
-        return "Joule"
-
-    elif ID == "*Kestrel*":
-        return "Kestrel"
-
-    elif ID == "*Koshka*":
-        return "Koshka"
-
-    elif ID == "*Hero009*":
-        return "Krul"
-
-    elif ID == "*Lance*":
-        return "Lance"
-
-    elif ID == "*Lyra*":
-        return "Lyra"
-
-    elif ID == "*Ozo*":
-        return "Ozo"
-
-    elif ID == "*Petal*":
-        return "Petal"
-
-    elif ID == "*Phinn*":
-        return "Phinn"
-
-    elif ID == "*Reim*":
-        return "Reim"
-
-    elif ID == "*Ringo*":
-        return "Ringo"
-
-    elif ID == "*Hero016*":
-        return "Rona"
-
-    elif ID == "*Samuel*":
-        return "Samuel"
-
-    elif ID == "*SAW*":
-        return "SAW"
-
-    elif ID == "*Hero010*":
-        return "Skaarf"
-
-    elif ID == "*Skye*":
-        return "Skye"
-
-    elif ID == "*Sayoc*":
-        return "Taka"
-
-    elif ID == "*Vox*":
-        return "Vox"
-
-    else:
-        return "Unknown Hero"
