@@ -3,6 +3,7 @@
 
 # IMPORTS
 import gamelocker
+from gamelocker.strings import pretty
 import datetime
 import discord
 from discord.ext import commands
@@ -63,20 +64,53 @@ def getPlayerInfoVG(ID, givenname=False, server="na"):
     return info
 
 # Get a PLAYERS performance from RANGE of DAYS with the players NAME
-def getPlayerPerformanceVG(name, days=7, type=0):
+def getPlayerPerformanceVG(name, days=7, game=""):
     name = str(name)  # Convert NAME to STRING to prevent errors
     days = int(days)  # Convert DAYS to INT to prevent errors
+    game = str(game)  # Convert GAME to STRING to prevent errors
 
     # ADD when FETCHING from VG API!!! example: {"filter[createdAt-start]": daterange, "filter[createdAt-end]": datenow, etc...}
     datenow = datetime.date.today()
     daterange = str(datenow - datetime.timedelta(days=days)) + "T00:00:00Z"  # Get the DATE RANGE to SEARCH from
     datenow = str(datetime.date.today()) + "T00:00:00Z"  # CURRENT DATE
 
-    try:
-        matches = apiVG.matches({"filter[createdAt-start]": daterange, "page[limit]": 50, "filter[playerNames]": name})  # GET MATCHES
+    filterVG = {"filter[createdAt-start]": daterange, "page[limit]": 50, "filter[playerNames]": name}  # DEFAULT things to FILTER VG MATCHES BY
 
-    except:
-        return "Couldn't get any matches for **" + name + "** from the past " + str(days) + " days!"  # RETURN if player MATCHES AREN'T FOUND
+    if game == "casual":
+        filterVG["filter[gameMode]"] = "casual"
+
+    elif game == "rank":
+        filterVG["filter[gameMode]"] = "ranked"
+
+    elif game == "royal":
+        filterVG["filter[gameMode]"] = "casual_aral"
+
+    elif game == "blitz":
+        filterVG["filter[gameMode]"] = "blitz_pvp_ranked"
+
+    print(filterVG)
+
+    try:  # TRY to find MATCHES in NA
+        matches = apiVG.matches(filterVG, "na")  # GET MATCHES from NA
+
+    except:  # If NOTHING is FOUND then search EU
+        try:
+            matches = apiVG.matches(filterVG, "eu")
+
+        except:  # If NOTHING is FOUND then search SEA
+            try:
+                matches = apiVG.matches(filterVG, "sea")
+
+            except:  # If NOTHING is FOUND then search EA
+                try:
+                    matches = apiVG.matches(filterVG, "ea")
+
+                except:  # If NOTHING is FOUND then search SA
+                    try:
+                        matches = apiVG.matches(filterVG, "sa")
+
+                    except:
+                        return "Couldn't get any matches for **" + str(name) + "** from the past " + str(days) + " days in any server!"  # RETURN if player MATCHES AREN'T FOUND
 
     # Get DATA out of the MATCH OBJECTS
     playerdata = []
@@ -113,25 +147,23 @@ def getPlayerPerformanceVG(name, days=7, type=0):
     for data in playerdata:
         attributes = data["attributes"]
         stats = attributes["stats"]
-        items = stats["items"]
 
-        actor.append(attributes["actor"])
+        actor.append(pretty(attributes["actor"]))
         assists.append(stats["assists"])
         crystalMineCaptures.append(stats["crystalMineCaptures"])
         deaths.append(stats["deaths"])
         farm.append(stats["farm"])
         goldMineCaptures.append(stats["goldMineCaptures"])
-        # itemslist.append(stats["items"])
 
-        for item in stats["items"]:
-            itemslist.append(item)
+        for item in stats["items"]:  # LOOPS the ITEMS for EACH MATCH ADDING it to the ITEMSLIST
+            itemslist.append(pretty(item))
 
         karmaLevel.append(stats["karmaLevel"])
         kills.append(stats["kills"])
         krakenCaptures.append(stats["krakenCaptures"])
         minionKills.append(stats["minionKills"])
         skillTier.append(stats["skillTier"])
-        skinKey.append(stats["skinKey"])
+        skinKey.append(pretty(stats["skinKey"]))
         turretCaptures.append(stats["turretCaptures"])
         wentAfk.append(stats["wentAfk"])
         winner.append(stats["winner"])
@@ -140,152 +172,135 @@ def getPlayerPerformanceVG(name, days=7, type=0):
             level = stats["level"]
         num += 1
 
-    print(itemslist)
+    print(str(actor) + " | actors")
+    print(str(assists) + " | assists")
+    print(str(crystalMineCaptures) + " | crystalMineCaptures")
+    print(str(deaths) + " | deaths")
+    print(str(farm) + " | farm")
+    print(str(goldMineCaptures) + " | goldMineCaptures")
+    print(str(itemslist) + " | itemslist")
+    print(str(karmaLevel) + " | karmaLevel")
+    print(str(kills) + " | kills")
+    print(str(krakenCaptures) + " | krakenCaptures")
+    print(str(level) + " | level")
+    print(str(minionKills) + " | minionKills")
+    print(str(skillTier) + " | skillTier")
+    print(str(skinKey) + " | skinKey")
+    print(str(turretCaptures) + " | turretCaptures")
+    print(str(wentAfk) + " | wentAfk")
+    print(str(winner) + " | winner")
 
-    msg = "```"
+    msg = "__**PERFORMANCE REPORT FOR " + str(name) + " FROM THE PAST " + str(days) + " DAYS"  # BEGINNING of MESSAGE being RETURNED
+
+    if game != "":
+        msg += " FROM " + str(game) + " GAMES!"
+
+    msg += "**__"
 
     # Adding the TOP ACTORS used in the past X days to MSG
     actors = tools.giveListInOrderTOOL(actor)
-    num = 0
-    while num < 5:
-        num += 1
-        msg += "**" + str(num) + "** ~ *" + str(giveHeroNameVG(actors[num])) + "*\n"
-
-    # Adding KILLS MEAN from the past X days to MSG
-    msg += "\n**Kills per Game:** *" + str(tools.giveMeanOfList(kills)) + "*"
-
-    # Adding ASSISTS MEAN from the past X days to MSG
-    msg += "\n**Assists per Game:** *" + str(tools.giveMeanOfList(assists)) + "*"
-
-    # Adding DEATHS MEAN from the past X days to MSG
-    msg += "\n**Deaths per Game:** *" + str(tools.giveMeanOfList(deaths)) + "*"
-
-    # Adding FARM MEAN from the past X days to MSG
-    msg += "\n**Farm per Game:** *" + str(tools.giveMeanOfList(farm)) + "*"
-
-    # # Adding  MEAN from the past X days to MSG
-    # msg += "\n**:** *" + str(tools.giveMeanOfList()) + "*"
-    #
-    # # Adding  MEAN from the past X days to MSG
-    # msg += "\n**:** *" + str(tools.giveMeanOfList()) + "*"
-    #
-    # # Adding  MEAN from the past X days to MSG
-    # msg += "\n**:** *" + str(tools.giveMeanOfList()) + "*"
-    #
-    # # Adding  MEAN from the past X days to MSG
-    # msg += "\n**:** *" + str(tools.giveMeanOfList()) + "*"
-    #
-    # # Adding  MEAN from the past X days to MSG
-    # msg += "\n**:** *" + str(tools.giveMeanOfList()) + "*"
-    #
-    # # Adding  MEAN from the past X days to MSG
-    # msg += "\n**:** *" + str(tools.giveMeanOfList()) + "*"
-    #
-    # # Adding  MEAN from the past X days to MSG
-    # msg += "\n**:** *" + str(tools.giveMeanOfList()) + "*"
-    #
-    # # Adding  MEAN from the past X days to MSG
-    # msg += "\n**:** *" + str(tools.giveMeanOfList()) + "*"
-
-    msg += "\n```"
-    return msg
-
-# Given ACTOR ID give HERO title
-def giveHeroNameVG(ID):
-    ID = str(ID)  # ID to STRING to PREVENT ERRORS
-
-    if ID == "*Adagio*":
-        return "Adagio"
-
-    elif ID == "*Alpha*":
-        return "Alpha"
-
-    elif ID == "*Ardan*":
-        return "Ardan"
-
-    elif ID == "*Baron*":
-        return "Baron"
-
-    elif ID == "*Blackfeather*":
-        return "Blackfeather"
-
-    elif ID == "*Catherine":
-        return "Catherine"
-
-    elif ID == "*Celeste*":
-        return "Celeste"
-
-    elif ID == "*Flicker*":
-        return "Flicker"
-
-    elif ID == "*Fortress*":
-        return "Fortress"
-
-    elif ID == "*Glaive*":
-        return "Glaive"
-
-    elif ID == "*Gwen*":
-        return "Gwen"
-
-    elif ID == "*Idris*":
-        return "Idris"
-
-    elif ID == "*Joule*":
-        return "Joule"
-
-    elif ID == "*Kestrel*":
-        return "Kestrel"
-
-    elif ID == "*Koshka*":
-        return "Koshka"
-
-    elif ID == "*Hero009*":
-        return "Krul"
-
-    elif ID == "*Lance*":
-        return "Lance"
-
-    elif ID == "*Lyra*":
-        return "Lyra"
-
-    elif ID == "*Ozo*":
-        return "Ozo"
-
-    elif ID == "*Petal*":
-        return "Petal"
-
-    elif ID == "*Phinn*":
-        return "Phinn"
-
-    elif ID == "*Reim*":
-        return "Reim"
-
-    elif ID == "*Ringo*":
-        return "Ringo"
-
-    elif ID == "*Hero016*":
-        return "Rona"
-
-    elif ID == "*Samuel*":
-        return "Samuel"
-
-    elif ID == "*SAW*":
-        return "SAW"
-
-    elif ID == "*Hero010*":
-        return "Skaarf"
-
-    elif ID == "*Skye*":
-        return "Skye"
-
-    elif ID == "*Sayoc*":
-        return "Taka"
-
-    elif ID == "*Vox*":
-        return "Vox"
+    if len(actors) <= 0:  # If NO ACTORS were FOUND then NOTICE USER about it
+        msg += "\n**We couldn't get any actors from your matches!**"
 
     else:
-        return "Unknown Hero"
+        msg += "\n**Actors Used Most:**"  # SET TITLE to INFO
+
+        num = 0
+        if len(actors) < 5:  # If LESS then FIVE ACTORS were FOUND then set NUM to the ACTORS LIST LENGTH
+            max = len(actors) - 1
+
+        elif len(actors) >= 5:  # If FIVE or MORE ACTORS were FOUND then SET NUM to FIVE
+            max = 5
+
+        while num < max:  # NAME POSITIONS of most USED ACTORS
+            msg += "\n**" + str(num + 1) + "** ~ *" + str(actors[num]) + "*"
+            num += 1
+
+    # Adding KILLS MEAN from the past X days to MSG
+    msg += "\n**Kills per Game:** *" + str(round(tools.giveMeanOfList(kills), 2)) + "*"
+
+    # Adding ASSISTS MEAN from the past X days to MSG
+    msg += "\n**Assists per Game:** *" + str(round(tools.giveMeanOfList(assists), 2)) + "*"
+
+    # Adding DEATHS MEAN from the past X days to MSG
+    msg += "\n**Deaths per Game:** *" + str(round(tools.giveMeanOfList(deaths), 2)) + "*"
+
+    # Adding FARM MEAN from the past X days to MSG
+    msg += "\n**Farm per Game:** *" + str(round(tools.giveMeanOfList(farm), 2)) + "*"
+
+    # Adding MINIONKILLS MEAN from the past X days to MSG
+    msg += "\n**Minions Killed per Game:** *" + str(round(tools.giveMeanOfList(minionKills), 2)) + "*"
+
+    # Adding SKILLTIER MEAN from the past X days to MSG
+    msg += "\n**Skill Tier Average Every Game:** *" + str(round(tools.giveMeanOfList(skillTier))) + "*"
+
+    # Adding WINNER MEAN from the past X days to MSG
+    msg += "\n**Victory Rate:** *" + str(round(tools.giveMeanOfList(winner))) + "*"
+
+    # Adding WENTAFK MEAN from the past X days to MSG
+    msg += "\n**AFK Rate:** *" + str(round(tools.giveMeanOfList(wentAfk))) + "*"
+
+    # Adding TURRETCAPTURES MEAN from the past X days to MSG
+    msg += "\n**Turrets Destroyed per Game:** *" + str(round(tools.giveMeanOfList(turretCaptures))) + "*"
+
+    # Adding KRAKEN MEAN from the past X days to MSG
+    msg += "\n**Kraken Captures per Game:** *" + str(round(tools.giveMeanOfList(krakenCaptures))) + "*"
+
+    # Adding the TOP SKINS used in the past X days to MSG
+    skins = tools.giveListInOrderTOOL(skinKey)
+    if len(skins) <= 0:  # If NO SKINS were FOUND then NOTICE USER about it
+        msg += "\n**We couldn't get any skins from your matches!**"
+
+    else:
+        msg += "\n**Skins Used Most:**"  # SET TITLE to INFO
+
+        num = 0
+        if len(skins) < 5:  # If LESS then FIVE SKINS were FOUND then set NUM to the ACTORS LIST LENGTH
+            max = len(skins) - 1
+
+        elif len(skins) >= 5:  # If FIVE or MORE SKINS were FOUND then SET NUM to FIVE
+            max = 5
+
+        while num < max:  # NAME POSITIONS of most USED SKINS
+            msg += "\n**" + str(num + 1) + "** ~ *" + str(skins[num]) + "*"
+            num += 1
+
+    # Adding  MEAN from the past X days to MSG
+    msg += "\n**Average Karma Every Game:** *" + str(round(tools.giveMeanOfList(karmaLevel))) + "*"
+
+    # Adding  MEAN from the past X days to MSG
+    msg += "\n**Gold Mine Captures:** *" + str(round(tools.giveMeanOfList(goldMineCaptures))) + "*"
+
+    # Adding  MEAN from the past X days to MSG
+    msg += "\n**Crystal Mine Captures:** *" + str(round(tools.giveMeanOfList(crystalMineCaptures))) + "*"
+
+    # Adding the TOP ITEMS used in the past X days to MSG
+    items = tools.giveListInOrderTOOL(itemslist)
+    if len(items) <= 0:  # If NO ITEMS were FOUND then NOTICE USER about it
+        msg += "\n**We couldn't get any items from your matches!**"
+
+    else:
+        msg += "\n**Items Used Most:**"  # SET TITLE to INFO
+
+        num = 0
+        if len(items) < 5:  # If LESS then FIVE ITEMS were FOUND then set NUM to the ACTORS LIST LENGTH
+            max = len(items) - 1
+
+        elif len(items) >= 5:  # If FIVE or MORE ITEMS were FOUND then SET NUM to FIVE
+            max = 5
+
+        while num < max:  # NAME POSITIONS of most USED ITEMS
+            msg += "\n**" + str(num + 1) + "** ~ *" + str(items[num]) + "*"
+            num += 1
+
+    # Adding  MEAN from the past X days to MSG
+    msg += "\n**Players Level:** *" + str(level) + "*"
+
+    # # Adding  MEAN from the past X days to MSG
+    # msg += "\n**** *" + str(round(tools.giveMeanOfList())) + "*"
+
+    msg += ""  # END of MESSAGE BEING SENT
+    return msg
 
 
 # CLASS containing ALL COMMANDS for THIS MODULE
@@ -300,12 +315,13 @@ class Vg():
         self.bot = bot
 
     @commands.command()
-    async def vgperformance(self, player_name="", days=7):
+    async def vgperformance(self, player_name="", days="7", game_type=""):
         """Gets a players performance in the past days.
 
-                >vgperformance (player_name) (days)
+                >vgperformance (player_name) (days) (game_type)
             player_name   ~   name of player to search for
             days          ~   day range to search from
+            game_type     ~   game type you would like performance check   ~   casual, ranked, royal, blitz
 
         """
 
@@ -321,25 +337,42 @@ class Vg():
             await self.bot.say(str(player_name) + " isn't a valid name... :sweat_smile:")
             return
 
-        notice = "Looking for match results for " + str(player_name) + " from the past " + str(days) + " days... :eyes:"
+        notice = "Looking for match results for " + str(player_name)
 
-        if tools.isIntTOOL(days) == True and days != "":  # CHECK DAYS to be a VALID NUMBER
-            days = int(days)
+        if days != "" and tools.isIntTOOL(days) == True:  # CHECK DAYS to be a VALID NUMBER
+            days = int(days)  # Convert DAYS to INT to prevent ERRORS
 
             if days > 93:
-                notice += "\nDates down from " + str(days) + " to 93 days!"  # ADD to NOTICE that DATE was CHANGED
                 days = 93  # MAKE DAYS a VALID RANGE
+                notice += " from the past " + str(days) + " days"  # ADD to NOTICE that DATE
 
             elif days <= 0:
-                notice += "\nDates up from " + str(days) + " to 1 day!"  # ADD to NOTICE that DATE was CHANGED
                 days = 1  # MAKE DAYS a VALID RANGE
+                notice += " from the past " + str(days) + " days"  # ADD to NOTICE that DATE
+            else:
+                notice += " from the past " + str(days) + " days"  # ADD to NOTICE that DATE
 
-        if tools.isIntTOOL(days) == False and days != "":
+        if days != "" and tools.isIntTOOL(days) == False:  # CHECKS if DATE is INVALID if so THEN MESSAGE USER
             await self.bot.say("Sorry but " + str(days) + " isn't a valid number... :sweat_smile:")  # If DAYS is an INVALID number TELL USER
             return
 
+        if game_type != "" and tools.isIntTOOL(game_type) == False:
+
+            if game_type == "casual" or game_type == "rank" or game_type == "royal" or game_type == "blitz":
+                notice += " from " + game_type
+
+            else:
+                await self.bot.say("Sorry but " + str(game_type) + " isn't a valid game type... :sweat_smile:")
+                return
+
+        if game_type != "" and tools.isIntTOOL(game_type) == True:
+            await self.bot.say("Sorry but " + str(game_type) + " isn't a valid game type... :sweat_smile:")
+            return
+
+        notice += "... :eyes:"
+
         msg = await self.bot.say(notice)  # NOTICE USER that THEIR COMMAND is being PROCESSED
-        await self.bot.edit_message(msg, str(getPlayerPerformanceVG(player_name, days)))  # RUNS PERFORMANCE FETCH and UPDATES MESSAGE once DONE
+        await self.bot.edit_message(msg, str(getPlayerPerformanceVG(player_name, days, game_type)))  # RUNS PERFORMANCE FETCH and UPDATES MESSAGE once DONE
 
     @commands.command()
     async def vgcheckplayer(self, player_name=""):
