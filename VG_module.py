@@ -29,7 +29,7 @@ def getPlayerInfoVG(name, server="", mode="", auto=False):
     filterVG = {'filter[createdAt-start]': daterange, 'page[limit]': 1, 'filter[playerNames]': name, "sort": "-createdAt"}  # DEFAULT things to FILTER VG PLAYERS BY
 
     # FOR DEBUGGING
-    # print(filterVG)
+    print(filterVG)
 
     if auto == True:
 
@@ -66,6 +66,19 @@ def getPlayerInfoVG(name, server="", mode="", auto=False):
         print("!!!HUGE ERROR!!!")
         return "!!!HUGE ERROR!!!"
 
+    # MATCH VARIABLES
+    id = ""
+    level = ""
+    lifetimeGold = ""
+    lossStreak = ""
+    played = ""
+    winStreak = ""
+    wins = ""
+    xp = ""
+    skillTier = ""
+    thumbnail = ""
+    karmaLevel = ""
+
     for match in matches:  # From that MATCH get the VAINGLORY PLAYER ID
         latestmatch = str(match.createdAt)
         gameMode = str(match.gameMode)
@@ -73,9 +86,8 @@ def getPlayerInfoVG(name, server="", mode="", auto=False):
         for roaster in match.rosters:
             for participant in roaster.participants:
                 if participant.player.name == name:
-                    playerstats = participant.player.stats
-                    # print(playerstats)
                     matchstats = participant.stats
+                    playerstats = participant.player.stats
 
                     id = str(participant.player.id)
                     level = str(matchstats["level"])
@@ -121,7 +133,7 @@ def getPlayerInfoVG(name, server="", mode="", auto=False):
     title = "Vainglory Career for " + str(name)
 
     # Create the DESCRIPTION for the EMBED
-    description = "**Player:** *" + str(name) + "* **| Lv:** *" + str(level) + "* **| ST:** *" + str(giveSkillTierVG(skillTier)) + "* **| K:** *" + str(karmaLevel) + "*\n**Last Game Registered:** *" + str(latestmatch) + "* **| Game Type:** *" + str(gameMode) + "*"
+    description = "**Player:** *" + str(name) + "* **| Lv:** *" + str(level) + "* **| ST:** *" + str(giveSkillTierVG(skillTier)) + "* **| K:** *" + str(giveKarmaVG(karmaLevel)) + "*\n**Last Game Registered:** *" + str(latestmatch) + "* **| Game Type:** *" + str(giveMatchVG(gameMode)) + "*"
 
     # ASSEMBLE the STATS TOGETHER for EMBED
     staticsOne = str(lifetimeGoldString) + str(winStreakString) + str(lossStreakString) + str(playedString) + str(winsString) + str(loseString) + str(xpString)
@@ -271,16 +283,10 @@ def getPlayerPerformanceVG(name, server="", days=7, game="", auto=False):
     wentAfk = []
     winner = []
 
-    num = 0
     # Go though PLAYERDATA getting DATA needed for building a PROFILE
     for data in playerdata:
         attributes = data["attributes"]
         stats = attributes["stats"]
-
-        if num == 0:  # Gets the DATA from the LATEST MATCH
-            level = stats["level"]
-            karmaLevel = stats["karmaLevel"]
-            skillTier = stats["skillTier"]
 
         actor.append(pretty(attributes["actor"]))
         assists.append(stats["assists"])
@@ -300,7 +306,9 @@ def getPlayerPerformanceVG(name, server="", days=7, game="", auto=False):
         wentAfk.append(stats["wentAfk"])
         winner.append(stats["winner"])
 
-        num += 1
+        level = stats["level"]
+        karmaLevel = stats["karmaLevel"]
+        skillTier = stats["skillTier"]
 
     # FOR DEBUGGING
     # print(str(actor) + " | actors")
@@ -342,7 +350,10 @@ def getPlayerPerformanceVG(name, server="", days=7, game="", auto=False):
             max = 3
 
         while num < max:  # NAME POSITIONS of most USED GAMEMODES
-            gamemodelistString += "\n**" + str(num + 1) + "** ~ *" + str(gamemodes[num])
+            gamemodelistString += "\n**" + str(num + 1) + "** ~ *"
+
+            gamemodelistString += str(giveMatchVG(gamemodes[num])) + "*"
+
             num += 1
 
     # CREATING a list(STRING) of the TOP ACTORS used in the past X days
@@ -445,19 +456,6 @@ def getPlayerPerformanceVG(name, server="", days=7, game="", auto=False):
     # CREATING LEVEL from the past X days
     # levelString = "\n**Players Level:** *" + str(level) + "*"
 
-    # CHANGE KARMA from a NUMBER to a STRING
-    if karmaLevel == 0:
-        karmaLevel = "Bad Karma"
-
-    elif karmaLevel == 1:
-        karmaLevel = "Good Karma"
-
-    elif karmaLevel == 2:
-        karmaLevel = "Great Karma"
-
-    else:
-        karmaLevel = "Wow that's some crazy karma!"
-
     # # CREATING  MEAN from the past X days
     # msg = "\n**** *" + str(round(tools.giveMeanOfList())) + "*"
 
@@ -468,7 +466,7 @@ def getPlayerPerformanceVG(name, server="", days=7, game="", auto=False):
     title = "Match performance from " + str(game) + " matches in the past " + str(days) + " days | Sampled: " + str(size) + " games"
 
     # Create the DESCRIPTION for the EMBED
-    description = "**Player:** *" + str(name) + "* **| Lv:** *" + str(level) + "* **| ST:** *" + str(giveSkillTierVG(skillTier)) + "* **| K:** *" + str(karmaLevel) + "*\n**Last Game Registered:** *" + str(latestmatch) + "*\n" + str(durationString) + str(gamemodelistString) + "\n" + str(winnerString) + str(wentafkString)
+    description = "**Player:** *" + str(name) + "* **| Lv:** *" + str(level) + "* **| ST:** *" + str(giveSkillTierVG(skillTier)) + "* **| K:** *" + str(giveKarmaVG(karmaLevel)) + "*\n**Last Game Registered:** *" + str(latestmatch) + "*\n" + str(durationString) + str(gamemodelistString) + "\n" + str(winnerString) + str(wentafkString)
 
     # ASSEMBLE the TOP LIST TOGETHER for EMBED
     toplist = str(actorslistString)
@@ -500,6 +498,72 @@ def getPlayerPerformanceVG(name, server="", days=7, game="", auto=False):
     # SEND the EMBED
     return embed
 
+# Gives KARMA as a TITLE
+def giveKarmaVG(karma, mode=0):
+    # CHECK that KARMA is VALID
+    if tools.isIntTOOL(karma) == False:
+        return "Wow that's some crazy karma!"
+    karma = int(karma)  # Convert KARMA to INT to prevent ERRORS
+
+    # CHANGE KARMA from a NUMBER to a STRING
+    if karma == 0:
+        if mode == 1:
+            return "http://i66.tinypic.com/2vsmdxi.jpg"
+
+        return "Bad Karma"
+
+    elif karma == 1:
+        if mode == 1:
+            return "http://i63.tinypic.com/2a9wrr7.jpg"
+
+        return "Good Karma"
+
+    elif karma == 2:
+        if mode == 1:
+            return "http://i64.tinypic.com/sd1t3b.jpg"
+
+        return "Great Karma"
+
+    else:
+        if mode == 1:
+            return "http://i63.tinypic.com/9k6xcj.jpg"
+
+        return "Wow that's some crazy karma!"
+
+# GIVES the IGN for MATCH MODE
+def giveMatchVG(match, mode=0):
+    # Check that MATCH is VALID
+    if tools.isIntTOOL(match) == True:
+        return "That one match..."
+    match = str(match)  # Convert MATCH to STRING to prevent ERRORS
+
+    # SEND the PRETTY version of GAMEMODE
+    if match == "blitz_pvp_ranked":
+        return "Blitz"
+
+    elif match == "casual_aral":
+        return "Battle Royal"
+
+    elif match == "private":
+        return "Private Casual"
+
+    elif match == "private_party_draft_match":
+        return "Private Draft"
+
+    elif match == "private_party_blitz_match":
+        return "Private Blitz"
+
+    elif match == "private_party_aral_match":
+        return "Private Battle Royal"
+
+    elif match == "casual":
+        return "Casual Match"
+
+    elif match == "ranked":
+        return "Rank Match"
+
+    else:  # If NO GAMEMODE was found SEND the RAW GAMEMODE
+        return str(match)
 
 # Gives SKILL TIER as a TITLE
 def giveSkillTierVG(tier, mode=0):
@@ -694,6 +758,282 @@ def giveSkillTierVG(tier, mode=0):
 
         return "Vainglorious - G"
 
+def getLatestMatchVG(name, server, game, auto):
+    name = str(name)  # Convert to STRING prevent ERRORS
+    server = str(server)  # Convert to STRING prevent ERRORS
+    game = str(game)  # Convert to STRING prevent ERRORS
+    auto = bool(auto)  # Convert to STRING prevent ERRORS
+
+    # ADD when FETCHING from VG API!!! example: {"filter[createdAt-start]": daterange, "filter[createdAt-end]": datenow, etc...}
+    datenow = datetime.date.today()
+    daterange = str(datenow - datetime.timedelta(days=31)) + "T00:00:00Z"  # Get the DATE RANGE to SEARCH from
+    datenow = str(datetime.date.today()) + "T00:00:00Z"  # CURRENT DATE
+
+    filterVG = {'filter[createdAt-start]': daterange, 'page[limit]': 1, 'filter[playerNames]': name, "sort": "-createdAt"}  # DEFAULT things to FILTER VG PLAYERS BY
+
+    if game == "casual":
+        filterVG["filter[gameMode]"] = "casual"
+
+    elif game == "rank":
+        filterVG["filter[gameMode]"] = "ranked"
+
+    elif game == "royal":
+        filterVG["filter[gameMode]"] = "casual_aral"
+
+    elif game == "blitz":
+        filterVG["filter[gameMode]"] = "blitz_pvp_ranked"
+
+
+    # FOR DEBUGGING
+    # print(filterVG)
+
+    if auto == True:
+
+        try:  # TRY to find MATCHES in NA
+            matches = apiVG.matches(filterVG, "na")
+
+        except:  # If NOTHING is FOUND then search EU
+            try:
+                matches = apiVG.matches(filterVG, "eu")
+
+            except:  # If NOTHING is FOUND then search SEA
+                try:
+                    matches = apiVG.matches(filterVG, "sg")
+
+                except:  # If NOTHING is FOUND then search EA
+                    try:
+                        matches = apiVG.matches(filterVG, "ea")
+
+                    except:  # If NOTHING is FOUND then search SA
+                        try:
+                            matches = apiVG.matches(filterVG, "sa")
+
+                        except:
+                            return "Couldn't get any matches for **" + str(name) + "** from the past 31 days in any server!"  # RETURN if player MATCHES AREN'T FOUND
+
+    elif auto == False:
+        try:  # GIVEN the SERVER try to FIND MATCHES for PLAYER
+            matches = apiVG.matches(filterVG, server)
+
+        except:
+            return "Couldn't get any matches for **" + str(name) + "** from the past 31 days in " + str(server) + " server!"
+
+    else:
+        print("!!!HUGE ERROR!!!")
+        return "!!!HUGE ERROR!!!"
+
+    # MATCH VARIABLES
+    latestmatch = ""
+    gameMode = ""
+    winner = ""
+    heroKillsA = ""
+    goldA = ""
+    acesEarnedA = ""
+    krakenCapturesA = ""
+    turretKillsA = ""
+    turretsRemainingA = ""
+    heroKillsB = ""
+    goldB = ""
+    acesEarnedB = ""
+    krakenCapturesB = ""
+    turretKillsB = ""
+    turretsRemainingB = ""
+    player1 = {}
+    player2 = {}
+    player3 = {}
+    player4 = {}
+    player5 = {}
+    player6 = {}
+
+    roasternum = 0
+    playernum = 0
+    for match in matches:  # From that MATCH get the VAINGLORY PLAYER ID
+        latestmatch = str(match.createdAt)
+        gameMode = str(match.gameMode)
+
+        for roaster in match.rosters:
+            roasterdata = roaster.to_dict()
+            roasterattributes = roasterdata["attributes"]
+            roasterstats = roasterattributes["stats"]
+            print(str(roasterdata) + " | RoasterData")
+            print(str(roasterattributes) + " | RoastersAttributes")
+            print(str(roasterstats) + " | RoasterStats")
+
+            if roasternum == 0:
+                heroKillsA = roasterstats["heroKills"]
+                goldA = roasterstats["gold"]
+                acesEarnedA = roasterstats["acesEarned"]
+                krakenCapturesA = roasterstats["krakenCaptures"]
+                turretKillsA = roasterstats["turretKills"]
+                turretsRemainingA = roasterstats["turretsRemaining"]
+
+            elif roasternum == 1:
+                heroKillsB = roasterstats["heroKills"]
+                goldB = roasterstats["gold"]
+                acesEarnedB = roasterstats["acesEarned"]
+                krakenCapturesB = roasterstats["krakenCaptures"]
+                turretKillsB = roasterstats["turretKills"]
+                turretsRemainingB = roasterstats["turretsRemaining"]
+
+            roasternum += 1
+
+            for participant in roaster.participants:
+                matchstats = participant.stats  # INFORMATION belonging to the MATCH about CURRENT PLAYER
+                playerstats = participant.player.stats  # INFORMATION belonging to the PLAYER about CURRENT PLAYER
+                print(str(matchstats) + " | MatchStats")
+                print(str(playerstats) + " | PlayerStats")
+
+                if participant.player.name == name:
+                    thumbnail = str(giveKarmaVG(matchstats["karmaLevel"], 1))
+
+                if playernum == 0:
+                    if str(matchstats["winner"]) == "True":
+                        winner = "Team A"
+
+                    player1["name"] = str(participant.player.name)
+                    player1["level"] = str(playerstats["level"])
+                    player1["karmaLevel"] = str(matchstats["karmaLevel"])
+                    player1["skillTier"] = str(matchstats["skillTier"])
+
+                    player1["actor"] = str(pretty(participant.actor))
+                    player1["kills"] = str(matchstats["kills"])
+                    player1["assists"] = str(matchstats["assists"])
+                    player1["deaths"] = str(matchstats["deaths"])
+                    player1["farm"] = str(matchstats["farm"])
+
+                elif playernum == 1:
+                    player2["name"] = str(participant.player.name)
+                    player2["level"] = str(playerstats["level"])
+                    player2["karmaLevel"] = str(matchstats["karmaLevel"])
+                    player2["skillTier"] = str(matchstats["skillTier"])
+
+                    player2["actor"] = str(pretty(participant.actor))
+                    player2["kills"] = str(matchstats["kills"])
+                    player2["assists"] = str(matchstats["assists"])
+                    player2["deaths"] = str(matchstats["deaths"])
+                    player2["farm"] = str(matchstats["farm"])
+
+                elif playernum == 2:
+                    player3["name"] = str(participant.player.name)
+                    player3["level"] = str(playerstats["level"])
+                    player3["karmaLevel"] = str(matchstats["karmaLevel"])
+                    player3["skillTier"] = str(matchstats["skillTier"])
+
+                    player3["actor"] = str(pretty(participant.actor))
+                    player3["kills"] = str(matchstats["kills"])
+                    player3["assists"] = str(matchstats["assists"])
+                    player3["deaths"] = str(matchstats["deaths"])
+                    player3["farm"] = str(matchstats["farm"])
+
+                elif playernum == 3:
+                    if str(matchstats["winner"]) == "True":
+                        winner = "Team B"
+
+                    player4["name"] = str(participant.player.name)
+                    player4["level"] = str(playerstats["level"])
+                    player4["karmaLevel"] = str(matchstats["karmaLevel"])
+                    player4["skillTier"] = str(matchstats["skillTier"])
+
+                    player4["actor"] = str(pretty(participant.actor))
+                    player4["kills"] = str(matchstats["kills"])
+                    player4["assists"] = str(matchstats["assists"])
+                    player4["deaths"] = str(matchstats["deaths"])
+                    player4["farm"] = str(matchstats["farm"])
+
+                elif playernum == 4:
+                    player5["name"] = str(participant.player.name)
+                    player5["level"] = str(playerstats["level"])
+                    player5["karmaLevel"] = str(matchstats["karmaLevel"])
+                    player5["skillTier"] = str(matchstats["skillTier"])
+
+                    player5["actor"] = str(pretty(participant.actor))
+                    player5["kills"] = str(matchstats["kills"])
+                    player5["assists"] = str(matchstats["assists"])
+                    player5["deaths"] = str(matchstats["deaths"])
+                    player5["farm"] = str(matchstats["farm"])
+
+                elif playernum == 5:
+                    player6["name"] = str(participant.player.name)
+                    player6["level"] = str(playerstats["level"])
+                    player6["karmaLevel"] = str(matchstats["karmaLevel"])
+                    player6["skillTier"] = str(matchstats["skillTier"])
+
+                    player6["actor"] = str(pretty(participant.actor))
+                    player6["kills"] = str(matchstats["kills"])
+                    player6["assists"] = str(matchstats["assists"])
+                    player6["deaths"] = str(matchstats["deaths"])
+                    player6["farm"] = str(matchstats["farm"])
+
+                playernum += 1
+
+    print(str(player1) + " | player1")
+    print(str(player2) + " | player2")
+    print(str(player3) + " | player3")
+    print(str(player4) + " | player4")
+    print(str(player5) + " | player5")
+    print(str(player6) + " | player6")
+
+    # Create STRING for TEAMA
+    teamAString = "**Kills:** *" + str(heroKillsA) + "* **| Deaths:** *" + str(heroKillsB) + "* **| Aces:** *" + str(acesEarnedA) + "* **| Kraken Captures:** *" + str(krakenCapturesA) + "* **| Gold:** *" + str(goldA) + "* **| Turrets Destroyed:** *" + str(turretKillsA) + "* **| Turrets Left:**" + str(turretsRemainingA) + "*"
+
+    # Create STRING for PLAYER1
+    player1String = "\n\n**Player:** *" + str(player1["name"]) + "* **| Lv:** *" + str(player1["level"]) + "* **ST:** *" + str(giveSkillTierVG(player1["skillTier"])) + "* **K:** *" + str(giveKarmaVG(player1["karmaLevel"])) + "*\n**Actor:** *" + str(player1["actor"]) + "* **| Kills:** *" + str(player1["kills"]) + "* **| Assists:** *" + player1["assists"] + "* **| Deaths:** *" + player1["deaths"] + "* **| Grind:** *" + player1["farm"] + "*"
+
+    # Create STRING for PLAYER2
+    player2String = "\n\n**Player:** *" + str(player2["name"]) + "* **| Lv:** *" + str(player2["level"]) + "* **ST:** *" + str(giveSkillTierVG(player2["skillTier"])) + "* **K:** *" + str(giveKarmaVG(player2["karmaLevel"])) + "*\n**Actor:** *" + str(player2["actor"]) + "* **| Kills:** *" + str(player2["kills"]) + "* **| Assists:** *" + player2["assists"] + "* **| Deaths:** *" + player2["deaths"] + "* **| Grind:** *" + player2["farm"] + "*"
+
+    # Create STRING for PLAYER3
+    player3String = "\n\n**Player:** *" + str(player3["name"]) + "* **| Lv:** *" + str(player3["level"]) + "* **ST:** *" + str(giveSkillTierVG(player3["skillTier"])) + "* **K:** *" + str(giveKarmaVG(player3["karmaLevel"])) + "*\n**Actor:** *" + str(player3["actor"]) + "* **| Kills:** *" + str(player3["kills"]) + "* **| Assists:** *" + player3["assists"] + "* **| Deaths:** *" + player3["deaths"] + "* **| Grind:** *" + player3["farm"] + "*"
+
+    # Create STRING for TEAMB
+    teamBString = "**Kills:** *" + str(heroKillsB) + "* **| Deaths:** *" + str(heroKillsA) + "* **| Aces:** *" + str(acesEarnedB) + "* **| Kraken Captures:** *" + str(krakenCapturesB) + "* **| Gold:** *" + str(goldB) + "* **| Turrets Destroyed:** *" + str(turretKillsB) + "* **| Turrets Left:**" + str(turretsRemainingB) + "*"
+
+    # Create STRING for PLAYER4
+    player4String = "\n\n**Player:** *" + str(player4["name"]) + "* **| Lv:** *" + str(player4["level"]) + "* **ST:** *" + str(giveSkillTierVG(player4["skillTier"])) + "* **K:** *" + str(giveKarmaVG(player4["karmaLevel"])) + "*\n**Actor:** *" + str(player4["actor"]) + "* **| Kills:** *" + str(player4["kills"]) + "* **| Assists:** *" + player4["assists"] + "* **| Deaths:** *" + player4["deaths"] + "* **| Grind:** *" + player4["farm"] + "*"
+
+    # Create STRING for PLAYER5
+    player5String = "\n\n**Player:** *" + str(player5["name"]) + "* **| Lv:** *" + str(player5["level"]) + "* **ST:** *" + str(giveSkillTierVG(player5["skillTier"])) + "* **K:** *" + str(giveKarmaVG(player5["karmaLevel"])) + "*\n**Actor:** *" + str(player5["actor"]) + "* **| Kills:** *" + str(player5["kills"]) + "* **| Assists:** *" + player5["assists"] + "* **| Deaths:** *" + player5["deaths"] + "* **| Grind:** *" + player5["farm"] + "*"
+
+    # Create STRING for PLAYER6
+    player6String = "\n\n**Player:** *" + str(player6["name"]) + "* **| Lv:** *" + str(player6["level"]) + "* **ST:** *" + str(giveSkillTierVG(player6["skillTier"])) + "* **K:** *" + str(giveKarmaVG(player6["karmaLevel"])) + "*\n**Actor:** *" + str(player6["actor"]) + "* **| Kills:** *" + str(player6["kills"]) + "* **| Assists:** *" + player6["assists"] + "* **| Deaths:** *" + player6["deaths"] + "* **| Grind:** *" + player6["farm"] + "*"
+
+    # Create the TITLE for EMBED
+    title = "Latest match from " + str(name) + " in the past 31 days | Game Type: " + str(giveMatchVG(gameMode)) + " | Date: " + str(latestmatch)
+
+    # Create the DESCRIPTION for the EMBED
+    description = "**Match Winner:** *" + str(winner) + "*"
+
+    # ASSEMBLE the TOP LIST TOGETHER for EMBED
+    teamAINFO = str(teamAString) + str(player1String) + str(player2String) + str(player3String)
+
+    # ASSEMBLE the STATS TOGETHER for EMBED
+    teamBINFO = str(teamBString) + str(player4String) + str(player5String) + str(player6String)
+
+    # CREATE the EMBED
+    embed = discord.Embed(title=title, colour=discord.Colour(0x4e9ff9), description=description, timestamp=datetime.datetime.now())
+
+    # Set the HEADER
+    embed.set_author(name="Computer", url="https://github.com/ClarkThyLord/Computer-BOT", icon_url="http://i67.tinypic.com/25738l1.jpg")
+
+    # Set the THUMBNAIL to MOST USED HERO
+    try:
+        embed.set_thumbnail(url=thumbnail)
+    except:  # If THUMBNAIL couldn't be REACHED then MAKE THUMBNAIL the Vainglory logo
+        embed.set_thumbnail(url="http://i63.tinypic.com/9k6xcj.jpg")
+
+    # ADD TOP LIST to the EMBED
+    embed.add_field(name="Team A:", value=teamAINFO)
+
+    # ADD PART ONE of STATICS to EMBED
+    embed.add_field(name="Team B:", value=teamBINFO)
+
+    # ADD FOOTER of STATICS to EMBED
+    embed.set_footer(text=signatureDISCORD, icon_url=botImageDISCORD)
+
+    # SEND the EMBED
+    return embed
+
+
 # CLASS containing ALL COMMANDS for THIS MODULE
 class Vg():
     """All the commands in relation to Vainglory.
@@ -811,11 +1151,11 @@ class Vg():
 
                 >player (player_name) (mode)
             player_name   ~   name of player to check for
-            server        ~   the server to which the player belongs to    ~   default: na, options: eu, sg, ea, sa
+            server        ~   the server to which the player belongs to    ~   default: na, options: na, eu, sg, ea, sa
             mode          ~   user or dev mode                             ~   default: user, options: user, dev
 
             Example:
-                >player player1 na casual
+                >player player1 na user
 
         """
 
@@ -872,6 +1212,74 @@ class Vg():
         msg = await self.bot.say(notice)  # NOTICE USER that THEIR COMMAND is being PROCESSED
         await self.bot.edit_message(msg, embed=getPlayerInfoVG(player_name, server, mode, auto))  # RUNS ID TEST
 
+
+    @commands.command()
+    async def match(self, player_name="", server="na", game_type="any", auto="False"):
+        """Checks if player exist in vainglory.
+
+                >player (player_name) (mode)
+            player_name   ~   name of player to check for
+            server        ~   the server to which the player belongs to    ~   default: na, options: na, eu, sg, ea, sa
+            game_type     ~   game type you would like performance check   ~   default: any, options: any, casual, ranked, royal, blitz
+
+            Example:
+                >match player1 na casual
+
+        """
+
+        # AUTO IS A SECRET VARIABLE THAT MAKES COMPUTER CHECK EVERY SERVER FOR PLAYER !!!WAIST OF API KEY!!!
+        # FALSE = WILL ONLY CHECK GIVEN SERVER, TRUE = WILL CHECK ALL SERVERS UNTIL FINDING PLAYER
+
+        notice = "Looking for the latest match of "  # DEFAULT NOTICE SENT to USER!
+
+        # Check that a NAME was GIVEN
+        if player_name == "":
+            await self.bot.say("You need to give a players name... :sweat_smile:")
+            return
+
+        # Check that NAME is VALID
+        if tools.isIntTOOL(player_name) == True or len(player_name) < 3:
+            await self.bot.say(str(player_name) + " isn't a valid name!")
+
+        notice += str(player_name)
+
+        # Check that SERVER is VALID
+        if server == "na" or server == "eu" or server == "sg" or server == "ea" or server == "sa":
+            notice += " in " + str(server) + " servers"
+
+        else:
+            await self.bot.say(str(server) + " isn't a valid server name... :sweat_smile:")
+            return
+
+        # Check that GAMETYPE is VALID
+        if game_type != "" and tools.isIntTOOL(game_type) == False:
+
+            if game_type == "any" or game_type == "casual" or game_type == "rank" or game_type == "royal" or game_type == "blitz":  # GAMETYPE is VALID
+                notice += " from " + game_type + " games"
+
+                # If GAMETYPE is ANY turn to BLANK
+                if game_type == "any":
+                    game_type = ""
+
+            else:  # GAMETYPE isn't VALID
+                await self.bot.say("Sorry but " + str(game_type) + " isn't a valid game type... :sweat_smile:")
+                return
+
+            # Converts AUTO to it's proper BOOLEAN
+            if auto == "False" or auto == "false":
+                auto = False
+            elif auto == "True" or auto == "true":
+                auto = True
+                notice += " - AUTO: True"
+
+            else:
+                await self.bot.say("That isn't a valid secret!")
+                return
+
+            notice += "... :eyes:"
+
+            msg = await self.bot.say(notice)
+            await self.bot.edit_message(msg, embed=getLatestMatchVG(player_name, server, game_type, auto))
 
 def setup(bot):
     bot.add_cog(Vg(bot))
