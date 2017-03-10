@@ -1149,7 +1149,7 @@ class Vg():
     async def player(self, player_name="", server="na", mode="user", auto="False"):
         """Checks if player exist in vainglory.
 
-                >player (player_name) (mode)
+                >player (player_name) (server) (mode)
             player_name   ~   name of player to check for
             server        ~   the server to which the player belongs to    ~   default: na, options: na, eu, sg, ea, sa
             mode          ~   user or dev mode                             ~   default: user, options: user, dev
@@ -1215,9 +1215,9 @@ class Vg():
 
     @commands.command()
     async def match(self, player_name="", server="na", game_type="any", auto="False"):
-        """Checks if player exist in vainglory.
+        """Fetched the latest Vainglory match.
 
-                >player (player_name) (mode)
+                >player (player_name) (server) (game_type)
             player_name   ~   name of player to check for
             server        ~   the server to which the player belongs to    ~   default: na, options: na, eu, sg, ea, sa
             game_type     ~   game type you would like performance check   ~   default: any, options: any, casual, ranked, royal, blitz
