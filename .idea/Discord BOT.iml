@@ -10,6 +10,7 @@
     <orderEntry type="module" module-name="Vainglory-Stats" />
     <orderEntry type="module" module-name="Works" />
     <orderEntry type="module" module-name="Replicators" />
+    <orderEntry type="module" module-name="Replicators" />
   </component>
   <component name="TestRunnerService">
     <option name="PROJECT_TEST_RUNNER" value="Unittests" />

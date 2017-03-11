@@ -1,5 +1,13 @@
 # Tool Module:
-# Small functions used to make life simpler!
+# Functions that make life easier
+"""
+
+Functions List:
+isIntTOOL
+giveMeanOfListTOOL
+giveListInOrderTOOL
+
+"""
 
 # Return TRUE if INT else FALSE
 def isIntTOOL(number):
@@ -10,7 +18,7 @@ def isIntTOOL(number):
         return False
 
 # !!!LIST MUST BE MADE OF SAME DATA TYPE OR BOOLEANS AND NON STRING!!! RETURN MEAN as an INT
-def giveMeanOfList(list):
+def giveMeanOfListTOOL(list):
     size = len(list)
     valuelist = []
 

@@ -4,6 +4,7 @@
     <mapping directory="C:/GitHub/Replicators" vcs="Git" />
     <mapping directory="C:/GitHub/Vainglory-Stats" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../Replicators" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../Replicators" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../Vainglory-Stats" vcs="Git" />
   </component>
 </project>

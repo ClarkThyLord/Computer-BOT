@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Discord BOT.iml" filepath="$PROJECT_DIR$/.idea/Discord BOT.iml" />
       <module fileurl="file://$PROJECT_DIR$/../Replicators/.idea/Replicators.iml" filepath="$PROJECT_DIR$/../Replicators/.idea/Replicators.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Replicators/.idea/Replicators.iml" filepath="$PROJECT_DIR$/../Replicators/.idea/Replicators.iml" />
       <module fileurl="file://C:/GitHub/Replicators/.idea/Replicators.iml" filepath="C:/GitHub/Replicators/.idea/Replicators.iml" />
       <module fileurl="file://$PROJECT_DIR$/../Vainglory-Stats/.idea/Vainglory-Stats.iml" filepath="$PROJECT_DIR$/../Vainglory-Stats/.idea/Vainglory-Stats.iml" />
       <module fileurl="file://C:/GitHub/Vainglory-Stats/.idea/Vainglory-Stats.iml" filepath="C:/GitHub/Vainglory-Stats/.idea/Vainglory-Stats.iml" />
