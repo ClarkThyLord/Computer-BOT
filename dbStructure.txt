@@ -1,0 +1,303 @@
+"""Mongo Data Base Structure"""
+
+!!!DISCORD!!!
+discord(Main/Test) ~ database -->
+	!!!SERVER DATA!!!
+	servers ~ collection -->
+		{
+			"_id": discord_server_id,
+			"general":
+			{
+				"prefix": [String],(Default: "$"; prefix used for commands)
+				"language": [String],(Default: english; lower case; blank spaces = _; language messages should be sent to in this server)
+				"notify": [True or False],(Default: True; whether bot can notify this server)
+				"notifyOwner": [True or False], (Default: False; whether bot can notify this server owner)
+				"botChannel": [False] or channel_id,(Default: False; channel to which bot is assigned to in server)
+				"commandBans": command_name,(Default: []; individual command bans or group of commands that have been banned)
+				"customCommands":
+				{
+					[String]: (command name; case sensitive, no spaces and no more then 20 characters)
+					{
+						"embed": [Boolean], (Default: True; if message should be sent as a embed)
+						"reason": [String], (Default: (command name))
+						*"from": [String], (from who or what sent it; *this will only be present when given by on on_message)
+						*"to": [String], (person who is receiving this; *this will only be present when given from on_member_join)
+						"destination": [String], ("here", to send to from where called on server, or "pm", which means send to to's pm)
+						"msg": [String](message being sent; no more then 1000 characters will contain '{}" where *from shall be)
+					}  
+				}, (Default: {}; custom commands; no more then 25 commands)
+				"memberJoin":
+				{
+					"announce":
+					{
+						"embed": [Boolean], (Default: True; if message should be sent as an embed)
+						"reason": [String], (Default: "Member Join")
+						*"from": [String], (from who or what sent it; )
+						*"to": [String], (person who is receiving this; *this will only be present when given from on_member_join)
+						"destination": [String], (discord server channel id to where announcement will be sent or "pm" which means send to to's pm)
+						"msg": [String] (message being sent; no more then 1000 characters will contain '{}" where *from shall be)
+					},
+					"giveRole":
+					{
+						"role": [String] (discord role id)
+					}
+				}, (Default: {}; things that trigger when a member joins)
+				"memberLeave":
+				{
+					"announce":
+					{
+						"embed": [Boolean], (Default: True; if message should be sent as an embed)
+						"reason": [String], (Default: "Member Left")
+						*"from": [String], (from who or what sent it; *this will only be present when given from on_member_leave)
+						*"to": [String], (person who is receiving this; *this will only be present when given from on_member_join)
+						"destination": [String], (discord server channel id to where announcement will be sent or "pm" which means send to to's pm)
+						"msg": [String] (message being sent; no more then 1000 characters will contain '{}" where *from shall be)
+					}
+				} (Default: {}; things that trigger when a member leaves)
+			},
+			vaingloryRelated:
+			{
+				"compact": [True or False], (Default: False; Whether vainglory embeds should be compact)
+				"emojis": [True or False], (Default: True; Whether emojis should be sent instead of certain strings)
+				"defaultRegion": [String],(Default: "na"; VainGlory region that belongs to server)
+				"guildName": None or [guild_name], (Default: None; case sensitive; blank spaces = _)
+				"guildTag": None or [guild_tag], (Default: None; case sensitive; no blank spaces)
+				"teamName": None or [team_name], (Default: None; case sensitive; blank spaces = _)
+				"teamTag": None or [team_tag] (Default: None; case sensitive; no blank spaces)
+			},
+			tournamentRelated:
+			{
+				"defaultGame": game_name(Default: vainglory; lower case)
+				"data":
+				[
+					{
+						"tournamentName": [String], (not lower case and with spaces),
+						"public": [True or False]
+					}
+				]
+			}
+		}
+
+
+	!!!USER DATA!!!
+	users ~ collection -->
+		{
+			"_id": discord_user_id,
+			"general":
+			{
+				language: [String] (Default: english; lower case; blank spaces = _; language messages should be sent to in this server)
+			},
+			vaingloryRelated:
+			{
+				"compact": [True or False], (Default: False; Whether vainglory embeds should be compact)
+				"emojis": [True or False], (Default: True; Whether emojis should be sent instead of certain strings)
+				"quickName": None or [String], (player name for vg searches without parameters)
+				"quickRegion": None or [String], (region for vg searches without parameters)
+				"quickGuildName": None or [String], (Default: None; case sensitive; blank spaces = _)
+				"quickTeamName": None or [String], (Default: None; case sensitive; blank spaces = _)
+				"verified": [Boolean], (Default: False; if this user is verifed)
+				"verifiedName": None or [String], (Default: None; who this user is in-game; blank spaces = _)
+				"verifiedRegion": None or [String], (Default: None; what region does this user belong to; na, eu, sg, ea, sa)
+				"canCreate": [Boolean], (Default: True; If this user can create profiles: player, guild, and team)
+				"playerProfile":
+				{
+					"voice": [Boolean], (Default: False; If the user does voice chat while playing)
+					"roles": [Array], (Default: ["any", "lane", "captain", "jungle]; Options: "any", "lane", "captain", "jungle")
+					"favRole": [String], (Default: Unknown; Options: Lane, Jungle, Captain, Unknown role user likes playing most)
+					"favPower": [String], (Default: Unknown; Options: Crystal, Weapon, Utility, Unknown; power user likes using most)
+					"favGameMode": [String], Default: Unknown; Options: Rank, Casual, Blitz, Royale
+					"reqSkillTier": [Integer], (Default: 0; skill tier required to view this users info)
+					"primeTime": [Array], (Default: ["allday", "morning", "midday", "night"]; Options: morning, midday, night, anytime; when this user can play VainGlory)
+					"description": [String], (Default: Just another VainGlory player!; description on the user)
+					"botKarma": [Float], (Default: 0; karma that is determined by users)
+					"player":
+					{
+						DATA
+					} (Default: {DATA})
+				}, (default: {}; players profile)
+				"guildProfile":
+				{
+					"name": [String], (guild name)
+					"tag": [String], (guild tag)
+					"level": [Integer], (Default: 0; guild level)
+					"region": [String], (guild region)
+					"reqSkillTier": [Integer], (Default: -1; the required skill tier to be in this guild)
+					"language": [String], (Default: english; the language this guild speaks mainly; no more then 15 characters; there may be spaces)
+					"primeTime": [Array], (Default: ["allday", "morning", "midday", "night"]; Options: morning, midday, night, anytime; when this user can play VainGlory)
+					"type": [String], (Default: casual, Options: Competitive, Semi, Casual, School)
+					"description": [String], (Default: Just another VainGlory guild!; guild description)
+					"contact": [String], (Default: Owners Discord Tag; where users can contact this guild)
+					"recruiting": [Boolean], (default: True; if this guild is recruiting)
+				}, (default: {}; guild profile)
+				"teamProfile":
+				{
+					"name": [String], (team name)
+					"tag": [String], (team tag)
+					"skillTier": [Integer], (Default: 0; team skill tier)
+					"region": [String], (team region)
+					"roles": [Array], (roles that team is looking to fill; Default: ["None"]; Options: "any", "none", "lane", "jungle", "captain")
+					"reqSkillTier": [Integer], (Default: -1; required skill tier to be in this team)
+					"language": [String], (Default: english; the language this team speaks mainly)
+					"primeTime": [Array], (Default: ["allday", "morning", "midday", "night"]; Options: morning, midday, night, anytime; when this user can play VainGlory)
+					"description": [String], (Default: Just another VainGlory team!; team description)
+					"type": [String], (Default: casual, Options: Competitive, Semi-Competitive, Casual, School)
+					"contact": [String], (Default: Owners Discord Tag; where users can contact this team)
+					"recruiting": [Boolean], (default: True; if this team is recruiting)
+				} (default: {}; team profile)
+			},
+			tournamentRelated:
+			{
+				"tournamentsIn":
+				[
+					{
+						"serverId": [server_id],
+						'tournamentId": [tournament_identifier]
+					}
+				]
+			}
+		}
+
+
+
+!!!VAINGLORY!!!
+vainglory(Main/Test) ~ database -->
+	(na/eu/sg/ea/sa)Players ~ collection -->
+		{
+			"_id": player_name, (case sensitive, blank spaces = _)
+			"lastUpdate": timestamp, (datetime format; last update in the database)
+			"lastUpdateApi": timestamp, (datetime format; timestamp given from api)
+			"data":
+			{
+			
+				(PLAYER DATA)
+			
+			}
+			
+		}
+	
+	(na/eu/sg/ea/sa)(Any/Casual/Ranked/Royale/Blitz/PrivateCasual/PrivateDraft/PrivateRoyale/PrivateBlitz) ~ collection -->
+		{
+			"_id": player_name, (case sensitive, blank spaces = _)
+			"lastUpdate": timestamp, (datetime format)
+			"lastUpdateApi": timestamp, (datetime format; timestamp given from api)
+			"data":
+			[
+			
+				(MATCH DATA; PURELY CASUAL MATCH TYPES)
+			
+			]
+		}
+
+    ############################
+    #IMPLEMENTED BUT NEVER USED#
+    ############################
+	(na/eu/sg/ea/sa)Sample ~ collection -->
+		{
+			"_id": game_mode, (name of game mode sampled; any, casual, royale, blitz, privateCasual, privateDraft, privateRoyale, privateBlitz)
+			"lastUpdate": timestamp, (datetime format)
+			"data":
+			[
+
+				(DATA)
+
+			]
+
+		}
+		
+	heroes ~ collection -->
+		{
+			"_id": [String], (Options:hero_name; lower case, no blank spaces),
+			"totalWins": [Integer], (Default: 0, amount of wins by this hero)
+			"totalLosses": [Integer], (Default: 0, amount of losses by this hero)
+			"totalKills": [Integer], (Default: 0, amount of kills with this hero)
+			"totalDeaths": [Integer], (Default: 0, amount of deaths by this hero)
+			"totalAssists": [Integer], (Default: 0, amount of assists done with this hero)
+			"totalMinionKills": [Integer], (Default: 0, amount of minions killed with this hero)
+			"totalFarm": [Integer], (Default: 0, amount of farm gained with this hero)
+			"totalGold": [Integer], (Default: 0, amount of gold gained with this hero)
+			"totalTurrets": [Integer], (Default: 0, amount of turret captures with this hero)
+			"totalGoldMiners": [Integer], (Default: 0, amount of gold miner captures with this hero)
+			"totalCrystalMiners": [Integer], (Default: 0, amount of crystal miner captures with this hero)
+			"totalKrakens": [Integer], (Default: 0, amount of kraken captures with this hero)
+			"items":
+				{
+					(item_name): (lower case; no blank spaces, " " = "_")
+						{
+							"wins": [Integer], (Default: 0; wins while used)
+							"losses": [Integer] (Default: 0; losses while used)
+						}
+				},
+			"heroes":
+				{
+					(hero_name): (lower case; no blank spaces, " " = "_")
+						{
+							"wins": [Integer], (Default: 0; wins against this sub hero)
+							"losses": [Integer] (Default: 0; losses against this sub hero)
+						}
+				}
+		}
+
+!!!VAINGLORY LEADER BOARDS!!!
+vaingloryLeaderBoards(Main/Test) ~ database -->
+	
+	(region, hero_name, position, role)(Afks, Assists, Deaths, Farm, Gold, GoldMiners, Kills, KrakenCaptures, MinionKills) ~ collection -->
+		{
+		
+			"_id": player_name, (case sensitive; blank spaces)
+			"score": score
+		
+		}
+
+############################
+#IMPLEMENTED BUT NEVER USED#
+############################
+
+!!!TOURNAMENT MAIN!!!
+tournament(Main/Test) ~ database -->
+	public ~ collection --> (open tournaments)
+		{
+			"_id": [server_id][tournament_name], (example: 2131232312thebiggame; A String maid up of server id and tournament_name all lower case no spaces)
+			"tournamentId": [tournament_ID],
+			"tournamentName": [tournament_name][String],
+			"owner": [discord_user_id],
+			"admins": 
+			[
+				[discord_user_id]
+			],
+			"public": [True or False],
+			"requests":
+			[
+				{
+					"id": [discord_user_id],
+					"msg": [String]
+				}
+			],
+			"participants":
+			[
+				[discord_user_id]
+			]
+		}
+	
+	private ~ collection --> (private tournaments)
+		{
+			"_id": [server_id][tournament_name], (example: 2131232312thebiggame; A String maid up of server id and tournament_name all lower case no spaces)
+			"tournamentId": [tournament_ID],
+			"tournamentName": [tournament_name][String],
+			"owner": [discord_user_id],
+			"admins": 
+			[
+				[discord_user_id]
+			],
+			"public": [True or False],
+			"requests":
+			[
+				{
+					"id": [discord_user_id],
+					"msg": [String]
+				}
+			],
+			"participants":
+			[
+				[discord_user_id]
+			]
+		}
